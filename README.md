@@ -78,20 +78,38 @@ You'll need a StockAlert.pro API key:
 
 ## Example Workflows
 
-### 1. Price Alert → Send Email
-```
-[StockAlert Node: Create Alert] → [StockAlert Trigger] → [Email Node]
-```
+We provide comprehensive workflow examples in the [`examples/`](examples/) directory:
 
-### 2. Multiple Stock Monitoring
-```
-[Schedule Trigger] → [StockAlert: List Alerts] → [Filter Active] → [Process Each]
-```
+### 📁 Available Examples
 
-### 3. Alert Dashboard
-```
-[StockAlert Trigger] → [Google Sheets: Add Row] → [Slack: Send Message]
-```
+1. **[Price Alert Workflow](examples/1-price-alert-workflow.json)**
+   - Basic price monitoring with email notifications
+   - Alert creation, status checking, and management
+   - Perfect for getting started
+
+2. **[Technical Analysis Workflow](examples/2-technical-analysis-workflow.json)**
+   - Automated technical indicators monitoring
+   - Golden Cross, Death Cross, RSI alerts
+   - Scheduled runs with Slack notifications
+
+3. **[Webhook Integration Workflow](examples/3-webhook-integration-workflow.json)**
+   - Real-time event processing
+   - Multi-channel notifications (Slack, Discord)
+   - Event logging to Google Sheets
+
+4. **[Portfolio Monitoring Workflow](examples/4-portfolio-monitoring-workflow.json)**
+   - Complete portfolio management solution
+   - Multiple alert types per stock
+   - Scheduled reports and Airtable logging
+
+### 🚀 Quick Start
+
+1. Import any example workflow into n8n
+2. Configure your StockAlert API credentials
+3. Customize stock symbols and thresholds
+4. Activate the workflow
+
+See the [examples README](examples/README.md) for detailed setup instructions.
 
 ## Example Usage
 
