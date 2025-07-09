@@ -1,14 +1,17 @@
 import {
 	IExecuteFunctions,
 	ILoadOptionsFunctions,
+	IHookFunctions,
 	IHttpRequestMethods,
-	IRequestOptions,
+	IHttpRequestOptions,
 	IDataObject,
+	INodeProperties,
 	NodeApiError,
+	JsonObject,
 } from 'n8n-workflow';
 
 export async function stockAlertApiRequest(
-	this: IExecuteFunctions | ILoadOptionsFunctions,
+	this: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
 	method: IHttpRequestMethods,
 	endpoint: string,
 	body: IDataObject = {},
@@ -21,9 +24,9 @@ export async function stockAlertApiRequest(
 		? 'https://stockalert.pro' 
 		: credentials.customUrl as string;
 
-	const options: IRequestOptions = {
+	const options: IHttpRequestOptions = {
 		method,
-		uri: `${baseUrl}/api/public/v1${endpoint}`,
+		url: `${baseUrl}/api/public/v1${endpoint}`,
 		json: true,
 		body,
 		qs,
@@ -44,7 +47,7 @@ export async function stockAlertApiRequest(
 			options,
 		);
 	} catch (error) {
-		throw new NodeApiError(this.getNode(), error);
+		throw new NodeApiError(this.getNode(), error as JsonObject);
 	}
 }
 

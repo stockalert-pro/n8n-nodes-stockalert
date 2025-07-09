@@ -5,6 +5,7 @@ import {
 	INodeTypeDescription,
 	IDataObject,
 	NodeOperationError,
+	NodeConnectionType,
 } from 'n8n-workflow';
 
 import {
@@ -26,8 +27,8 @@ export class StockAlert implements INodeType {
 		defaults: {
 			name: 'StockAlert',
 		},
-		inputs: ['main'],
-		outputs: ['main'],
+		inputs: [NodeConnectionType.Main],
+		outputs: [NodeConnectionType.Main],
 		credentials: [
 			{
 				name: 'stockAlertApi',
@@ -702,7 +703,7 @@ export class StockAlert implements INodeType {
 				}
 			} catch (error) {
 				if (this.continueOnFail()) {
-					returnData.push({ error: error.message });
+					returnData.push({ error: (error as Error).message });
 					continue;
 				}
 				throw error;

@@ -6,6 +6,7 @@ import {
 	INodeTypeDescription,
 	IWebhookResponseData,
 	NodeOperationError,
+	NodeConnectionType,
 } from 'n8n-workflow';
 
 import { stockAlertApiRequest } from './GenericFunctions';
@@ -22,7 +23,7 @@ export class StockAlertTrigger implements INodeType {
 			name: 'StockAlert Trigger',
 		},
 		inputs: [],
-		outputs: ['main'],
+		outputs: [NodeConnectionType.Main],
 		credentials: [
 			{
 				name: 'stockAlertApi',
@@ -196,7 +197,7 @@ export class StockAlertTrigger implements INodeType {
 				} catch (error) {
 					throw new NodeOperationError(
 						this.getNode(),
-						`Failed to create webhook: ${error.message}`,
+						`Failed to create webhook: ${(error as Error).message}`,
 					);
 				}
 
