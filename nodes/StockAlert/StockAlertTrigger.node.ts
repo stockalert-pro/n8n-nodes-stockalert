@@ -6,7 +6,6 @@ import {
 	INodeTypeDescription,
 	IWebhookResponseData,
 	NodeOperationError,
-	NodeConnectionType,
 } from 'n8n-workflow';
 
 import { stockAlertApiRequest } from './GenericFunctions';
@@ -23,7 +22,7 @@ export class StockAlertTrigger implements INodeType {
 			name: 'StockAlert Trigger',
 		},
 		inputs: [],
-		outputs: [NodeConnectionType.Main],
+		outputs: ['main'] as any,
 		credentials: [
 			{
 				name: 'stockAlertApi',

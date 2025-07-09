@@ -4,7 +4,6 @@ import {
 	INodeType,
 	INodeTypeDescription,
 	IDataObject,
-	NodeConnectionType,
 } from 'n8n-workflow';
 
 import {
@@ -25,8 +24,8 @@ export class StockAlert implements INodeType {
 		defaults: {
 			name: 'StockAlert',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'] as any,
+		outputs: ['main'] as any,
 		credentials: [
 			{
 				name: 'stockAlertApi',
