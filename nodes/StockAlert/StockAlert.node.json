@@ -1,0 +1,22 @@
+{
+  "node": "n8n-nodes-base.stockAlert",
+  "nodeVersion": "1.0",
+  "codexVersion": "1.0",
+  "categories": ["Data & Storage", "Finance"],
+  "subcategories": {
+    "Data & Storage": ["Financial Data"]
+  },
+  "resources": {
+    "primaryDocumentation": [
+      {
+        "url": "https://stockalert.pro/api/docs"
+      }
+    ],
+    "credentialDocumentation": [
+      {
+        "url": "https://stockalert.pro/dashboard/api-keys"
+      }
+    ]
+  },
+  "alias": ["Stock", "Trading", "Alert", "Finance", "Market"]
+}
