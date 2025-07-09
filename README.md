@@ -23,7 +23,7 @@ npm install @stockalert/n8n-nodes
 You'll need a StockAlert.pro API key:
 
 1. Sign up at [StockAlert.pro](https://stockalert.pro)
-2. Go to Dashboard > API Keys
+2. Go to Dashboard > Settings > API Keys (at the bottom of the page)
 3. Create a new API key
 4. Use this key in your n8n StockAlert credentials
 

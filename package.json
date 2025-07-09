@@ -1,6 +1,6 @@
 {
   "name": "@stockalert/n8n-nodes",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "n8n nodes for StockAlert.pro API",
   "keywords": [
     "n8n-community-node-package",
