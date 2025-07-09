@@ -1,0 +1,380 @@
+{
+  "name": "StockAlert Portfolio Monitoring",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 10,14 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "f1a2b3c4-d5e6-7890-abcd-ef1234567890",
+      "name": "Market Hours Check",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "getAllRows",
+        "documentId": "YOUR_PORTFOLIO_SHEET_ID",
+        "sheetName": "Portfolio",
+        "options": {}
+      },
+      "id": "a2b3c4d5-e6f7-8901-bcde-f23456789012",
+      "name": "Get Portfolio",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [450, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4",
+          "name": "Google Sheets OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "alert",
+        "operation": "create",
+        "condition": "price_change_down",
+        "alertConfig": {
+          "symbol": "={{$json.symbol}}",
+          "threshold": 5,
+          "notification": "email"
+        }
+      },
+      "id": "b3c4d5e6-f7a8-9012-cdef-345678901234",
+      "name": "5% Drop Alert",
+      "type": "n8n-nodes-stockalert.stockAlert",
+      "typeVersion": 1,
+      "position": [650, 200],
+      "credentials": {
+        "stockAlertApi": {
+          "id": "1",
+          "name": "StockAlert API"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "resource": "alert",
+        "operation": "create",
+        "condition": "volume_change",
+        "alertConfig": {
+          "symbol": "={{$json.symbol}}",
+          "threshold": 50,
+          "notification": "sms"
+        }
+      },
+      "id": "c4d5e6f7-a8b9-0123-defa-456789012345",
+      "name": "Volume Spike Alert",
+      "type": "n8n-nodes-stockalert.stockAlert",
+      "typeVersion": 1,
+      "position": [650, 400],
+      "credentials": {
+        "stockAlertApi": {
+          "id": "1",
+          "name": "StockAlert API"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "resource": "alert",
+        "operation": "create",
+        "condition": "new_high",
+        "alertConfig": {
+          "symbol": "={{$json.symbol}}",
+          "notification": "email"
+        }
+      },
+      "id": "d5e6f7a8-b9c0-1234-efab-567890123456",
+      "name": "52-Week High Alert",
+      "type": "n8n-nodes-stockalert.stockAlert",
+      "typeVersion": 1,
+      "position": [650, 600],
+      "credentials": {
+        "stockAlertApi": {
+          "id": "1",
+          "name": "StockAlert API"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "resource": "alert",
+        "operation": "create",
+        "condition": "earnings_announcement",
+        "alertConfig": {
+          "symbol": "={{$json.symbol}}",
+          "notification": "email"
+        }
+      },
+      "id": "e6f7a8b9-c0d1-2345-fabc-678901234567",
+      "name": "Earnings Alert",
+      "type": "n8n-nodes-stockalert.stockAlert",
+      "typeVersion": 1,
+      "position": [650, 800],
+      "credentials": {
+        "stockAlertApi": {
+          "id": "1",
+          "name": "StockAlert API"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f7a8b9c0-d1e2-3456-7890-abcdef123456",
+              "name": "alertsSummary",
+              "value": "={\n  \"total\": {{$items().length}},\n  \"successful\": {{$items().filter(item => item.json.success === true).length}},\n  \"failed\": {{$items().filter(item => item.json.error).length}},\n  \"symbols\": {{JSON.stringify($items().map(item => item.json.symbol).filter(Boolean).unique())}}\n}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f7a8b9c0-d1e2-3456-abcd-789012345678",
+      "name": "Aggregate Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 500]
+    },
+    {
+      "parameters": {
+        "resource": "alert",
+        "operation": "getAll",
+        "returnAll": true,
+        "filters": {
+          "status": "active"
+        }
+      },
+      "id": "a8b9c0d1-e2f3-4567-bcde-890123456789",
+      "name": "Get All Active Alerts",
+      "type": "n8n-nodes-stockalert.stockAlert",
+      "typeVersion": 1,
+      "position": [1050, 500],
+      "credentials": {
+        "stockAlertApi": {
+          "id": "1",
+          "name": "StockAlert API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "portfolio@yourcompany.com",
+        "toEmail": "investor@yourcompany.com",
+        "subject": "Portfolio Alert Summary - {{$now.format('YYYY-MM-DD HH:mm')}}",
+        "html": "<h2>Portfolio Monitoring Report</h2>\n<p><strong>Time:</strong> {{$now.format('YYYY-MM-DD HH:mm:ss')}}</p>\n\n<h3>Alert Creation Summary</h3>\n<ul>\n  <li>Total alerts attempted: {{$json.alertsSummary.total}}</li>\n  <li>Successful: {{$json.alertsSummary.successful}}</li>\n  <li>Failed: {{$json.alertsSummary.failed}}</li>\n</ul>\n\n<h3>Monitored Symbols</h3>\n<p>{{$json.alertsSummary.symbols.join(', ')}}</p>\n\n<h3>Active Alerts</h3>\n<p>You currently have {{$items('Get All Active Alerts').length}} active alerts.</p>\n\n<hr>\n<p style=\"font-size: 12px; color: #666;\">This is an automated report from your n8n StockAlert workflow.</p>",
+        "options": {}
+      },
+      "id": "b9c0d1e2-f3a4-5678-cdef-901234567890",
+      "name": "Send Summary Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1250, 500],
+      "credentials": {
+        "smtp": {
+          "id": "2",
+          "name": "SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "webhook_url",
+              "value": "https://hooks.airtable.com/workflows/v1/YOUR_WEBHOOK_ID"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c0d1e2f3-a4b5-6789-defa-012345678901",
+      "name": "Airtable Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [1050, 700]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$json.webhook_url}}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "timestamp",
+              "value": "={{$now.toISO()}}"
+            },
+            {
+              "name": "alerts_created",
+              "value": "={{$items('Aggregate Results')[0].json.alertsSummary.successful}}"
+            },
+            {
+              "name": "alerts_failed",
+              "value": "={{$items('Aggregate Results')[0].json.alertsSummary.failed}}"
+            },
+            {
+              "name": "total_active",
+              "value": "={{$items('Get All Active Alerts').length}}"
+            },
+            {
+              "name": "symbols",
+              "value": "={{$items('Aggregate Results')[0].json.alertsSummary.symbols.join(', ')}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d1e2f3a4-b5c6-7890-efab-123456789012",
+      "name": "Log to Airtable",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1250, 700]
+    }
+  ],
+  "connections": {
+    "Market Hours Check": {
+      "main": [
+        [
+          {
+            "node": "Get Portfolio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Portfolio": {
+      "main": [
+        [
+          {
+            "node": "5% Drop Alert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Volume Spike Alert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "52-Week High Alert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Earnings Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5% Drop Alert": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Volume Spike Alert": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "52-Week High Alert": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Earnings Alert": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Results": {
+      "main": [
+        [
+          {
+            "node": "Get All Active Alerts",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Airtable Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Active Alerts": {
+      "main": [
+        [
+          {
+            "node": "Send Summary Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable Config": {
+      "main": [
+        [
+          {
+            "node": "Log to Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "34d5a0f1-0a2e-4f23-8f1a-1234567890ab",
+  "id": "4",
+  "meta": {
+    "instanceId": "abc123def456ghi789jkl012mno345pqr678stu901vwx234yz"
+  },
+  "tags": []
+}

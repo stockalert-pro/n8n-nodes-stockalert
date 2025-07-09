@@ -1,0 +1,173 @@
+{
+  "name": "StockAlert Price Monitoring",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "9a9e1e5c-8a4f-4f4b-a4f8-2f8f8f8f8f8f",
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "resource": "alert",
+        "operation": "create",
+        "condition": "price_above",
+        "alertConfig": {
+          "symbol": "AAPL",
+          "threshold": 200,
+          "notification": "email"
+        }
+      },
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "Create Price Alert",
+      "type": "n8n-nodes-stockalert.stockAlert",
+      "typeVersion": 1,
+      "position": [450, 300],
+      "credentials": {
+        "stockAlertApi": {
+          "id": "1",
+          "name": "StockAlert API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "alert",
+        "operation": "getAll",
+        "filters": {
+          "status": "active",
+          "search": "AAPL"
+        }
+      },
+      "id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
+      "name": "Get Active Alerts",
+      "type": "n8n-nodes-stockalert.stockAlert",
+      "typeVersion": 1,
+      "position": [650, 300],
+      "credentials": {
+        "stockAlertApi": {
+          "id": "1",
+          "name": "StockAlert API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.status}}",
+              "operation": "equal",
+              "value2": "triggered"
+            }
+          ]
+        }
+      },
+      "id": "c3d4e5f6-a7b8-9012-cdef-345678901234",
+      "name": "Check if Triggered",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "resource": "alert",
+        "operation": "update",
+        "alertId": "={{$json.id}}",
+        "status": "paused"
+      },
+      "id": "d4e5f6a7-b8c9-0123-defa-456789012345",
+      "name": "Pause Triggered Alert",
+      "type": "n8n-nodes-stockalert.stockAlert",
+      "typeVersion": 1,
+      "position": [1050, 200],
+      "credentials": {
+        "stockAlertApi": {
+          "id": "1",
+          "name": "StockAlert API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "alerts@yourcompany.com",
+        "toEmail": "admin@yourcompany.com",
+        "subject": "Alert Triggered: {{$json.symbol}} - {{$json.condition}}",
+        "text": "Your alert for {{$json.symbol}} has been triggered.\n\nDetails:\n- Alert Type: {{$json.condition}}\n- Current Price: {{$json.current_price}}\n- Threshold: {{$json.threshold}}\n- Time: {{$json.triggered_at}}"
+      },
+      "id": "e5f6a7b8-c9d0-1234-efab-567890123456",
+      "name": "Send Email Notification",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1050, 400],
+      "credentials": {
+        "smtp": {
+          "id": "2",
+          "name": "SMTP"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Create Price Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Price Alert": {
+      "main": [
+        [
+          {
+            "node": "Get Active Alerts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Active Alerts": {
+      "main": [
+        [
+          {
+            "node": "Check if Triggered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Triggered": {
+      "main": [
+        [
+          {
+            "node": "Pause Triggered Alert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Email Notification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "89d2a0f1-0a2e-4f23-8f1a-1234567890ab",
+  "id": "1",
+  "meta": {
+    "instanceId": "abc123def456ghi789jkl012mno345pqr678stu901vwx234yz"
+  },
+  "tags": []
+}

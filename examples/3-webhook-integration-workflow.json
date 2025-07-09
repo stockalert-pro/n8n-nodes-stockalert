@@ -1,0 +1,336 @@
+{
+  "name": "StockAlert Webhook Integration",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "resource": "webhook",
+        "operation": "create",
+        "webhookUrl": "={{$env.N8N_WEBHOOK_URL}}/webhook/stockalert-notifications",
+        "events": [
+          "alert.triggered",
+          "alert.created",
+          "alert.updated"
+        ]
+      },
+      "id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
+      "name": "Register Webhook",
+      "type": "n8n-nodes-stockalert.stockAlert",
+      "typeVersion": 1,
+      "position": [450, 300],
+      "credentials": {
+        "stockAlertApi": {
+          "id": "1",
+          "name": "StockAlert API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "webhookId",
+              "value": "={{$json.id}}"
+            },
+            {
+              "name": "webhookSecret",
+              "value": "={{$json.secret}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c3d4e5f6-a7b8-9012-cdef-345678901234",
+      "name": "Store Webhook Info",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "stockalert-notifications",
+        "responseMode": "onReceived",
+        "responseData": "",
+        "responseCode": 200,
+        "options": {}
+      },
+      "id": "d4e5f6a7-b8c9-0123-defa-456789012345",
+      "name": "Webhook Receiver",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 600],
+      "webhookId": "stockalert-webhook-receiver"
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{$json.headers['x-stockalert-signature']}}",
+        "rules": {
+          "rules": [
+            {
+              "operation": "exists"
+            }
+          ]
+        },
+        "fallbackOutput": "extra"
+      },
+      "id": "e5f6a7b8-c9d0-1234-efab-567890123456",
+      "name": "Verify Signature",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [450, 600]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{$json.body.event}}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "alert.triggered"
+            },
+            {
+              "value2": "alert.created",
+              "output": 1
+            },
+            {
+              "value2": "alert.updated",
+              "output": 2
+            }
+          ]
+        }
+      },
+      "id": "f6a7b8c9-d0e1-2345-fabc-678901234567",
+      "name": "Route by Event Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [650, 600]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": "YOUR_GOOGLE_SHEET_ID",
+        "sheetName": "Alert History",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{$json.body.timestamp}}",
+            "event": "={{$json.body.event}}",
+            "alertId": "={{$json.body.data.id}}",
+            "symbol": "={{$json.body.data.symbol}}",
+            "condition": "={{$json.body.data.condition}}",
+            "threshold": "={{$json.body.data.threshold}}",
+            "currentPrice": "={{$json.body.data.current_price}}",
+            "triggeredAt": "={{$json.body.data.triggered_at}}"
+          }
+        },
+        "options": {}
+      },
+      "id": "a7b8c9d0-e1f2-3456-bcde-789012345678",
+      "name": "Log to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [850, 500],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4",
+          "name": "Google Sheets OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Alert Triggered!\n\n**Stock:** {{$json.body.data.symbol}}\n**Alert Type:** {{$json.body.data.condition}}\n**Current Price:** ${{$json.body.data.current_price}}\n**Threshold:** ${{$json.body.data.threshold}}\n**Time:** {{$json.body.data.triggered_at}}\n\n[View Alert](https://stockalert.pro/dashboard/alerts/{{$json.body.data.id}})"
+      },
+      "id": "b8c9d0e1-f2a3-4567-cdef-890123456789",
+      "name": "Format Alert Message",
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [850, 700]
+    },
+    {
+      "parameters": {
+        "channel": "#trading-alerts",
+        "text": "{{$json.content}}",
+        "otherOptions": {
+          "attachments": {
+            "attachments": [
+              {
+                "color": "#ff0000",
+                "fields": {
+                  "item": [
+                    {
+                      "short": true,
+                      "title": "Symbol",
+                      "value": "{{$json.body.data.symbol}}"
+                    },
+                    {
+                      "short": true,
+                      "title": "Price",
+                      "value": "${{$json.body.data.current_price}}"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "id": "c9d0e1f2-a3b4-5678-defa-901234567890",
+      "name": "Send to Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [1050, 700],
+      "credentials": {
+        "slackApi": {
+          "id": "3",
+          "name": "Slack API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "YOUR_DISCORD_CHANNEL_ID",
+          "mode": "id"
+        },
+        "text": "**New Alert Created**\nSymbol: {{$json.body.data.symbol}}\nType: {{$json.body.data.condition}}\nStatus: {{$json.body.data.status}}"
+      },
+      "id": "d0e1f2a3-b4c5-6789-efab-012345678901",
+      "name": "Discord Notification",
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 1,
+      "position": [850, 900],
+      "credentials": {
+        "discordOAuth2Api": {
+          "id": "5",
+          "name": "Discord OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "### Webhook Validation Failed\n\nReceived webhook call with invalid signature.\n\nHeaders: {{JSON.stringify($json.headers)}}"
+      },
+      "id": "e1f2a3b4-c5d6-7890-fabc-123456789012",
+      "name": "Security Error",
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [650, 800]
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Register Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Register Webhook": {
+      "main": [
+        [
+          {
+            "node": "Store Webhook Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Receiver": {
+      "main": [
+        [
+          {
+            "node": "Verify Signature",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Signature": {
+      "main": [
+        [
+          {
+            "node": "Route by Event Type",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Security Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Event Type": {
+      "main": [
+        [
+          {
+            "node": "Log to Google Sheets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Format Alert Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Discord Notification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Alert Message": {
+      "main": [
+        [
+          {
+            "node": "Send to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "23d4a0f1-0a2e-4f23-8f1a-1234567890ef",
+  "id": "3",
+  "meta": {
+    "instanceId": "abc123def456ghi789jkl012mno345pqr678stu901vwx234yz"
+  },
+  "tags": []
+}

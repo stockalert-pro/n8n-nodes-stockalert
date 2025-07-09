@@ -1,0 +1,272 @@
+{
+  "name": "StockAlert Technical Analysis Alerts",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 4
+            }
+          ]
+        }
+      },
+      "id": "f1a2b3c4-d5e6-7890-abcd-ef1234567890",
+      "name": "Every 4 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "symbols",
+              "value": "TSLA,GOOGL,MSFT,AMZN,META"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a2b3c4d5-e6f7-8901-bcde-f23456789012",
+      "name": "Stock Symbols",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "symbols",
+        "splitOutValue": "={{$json.symbols.split(',')}}"
+      },
+      "id": "b3c4d5e6-f7a8-9012-cdef-345678901234",
+      "name": "Split Symbols",
+      "type": "n8n-nodes-base.itemLists",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "resource": "alert",
+        "operation": "create",
+        "condition": "ma_crossover_golden",
+        "alertConfig": {
+          "symbol": "={{$json.symbols}}",
+          "notification": "email"
+        }
+      },
+      "id": "c4d5e6f7-a8b9-0123-defa-456789012345",
+      "name": "Golden Cross Alert",
+      "type": "n8n-nodes-stockalert.stockAlert",
+      "typeVersion": 1,
+      "position": [850, 200],
+      "credentials": {
+        "stockAlertApi": {
+          "id": "1",
+          "name": "StockAlert API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "alert",
+        "operation": "create",
+        "condition": "rsi_limit",
+        "alertConfig": {
+          "symbol": "={{$json.symbols}}",
+          "threshold": 70,
+          "notification": "sms",
+          "rsiDirection": "above"
+        }
+      },
+      "id": "d5e6f7a8-b9c0-1234-efab-567890123456",
+      "name": "RSI Overbought Alert",
+      "type": "n8n-nodes-stockalert.stockAlert",
+      "typeVersion": 1,
+      "position": [850, 400],
+      "credentials": {
+        "stockAlertApi": {
+          "id": "1",
+          "name": "StockAlert API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "alert",
+        "operation": "create",
+        "condition": "rsi_limit",
+        "alertConfig": {
+          "symbol": "={{$json.symbols}}",
+          "threshold": 30,
+          "notification": "email",
+          "rsiDirection": "below"
+        }
+      },
+      "id": "e6f7a8b9-c0d1-2345-fabc-678901234567",
+      "name": "RSI Oversold Alert",
+      "type": "n8n-nodes-stockalert.stockAlert",
+      "typeVersion": 1,
+      "position": [850, 600],
+      "credentials": {
+        "stockAlertApi": {
+          "id": "1",
+          "name": "StockAlert API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{$json.success}}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "true"
+            }
+          ]
+        },
+        "fallbackOutput": "extra"
+      },
+      "id": "f7a8b9c0-d1e2-3456-abcd-789012345678",
+      "name": "Check Success",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [1050, 400]
+    },
+    {
+      "parameters": {
+        "channel": "#stock-alerts",
+        "text": "Technical alerts created for {{$json.symbol}}:\n- Golden Cross (MA50/MA200)\n- RSI Overbought (>70)\n- RSI Oversold (<30)",
+        "otherOptions": {}
+      },
+      "id": "a8b9c0d1-e2f3-4567-bcde-890123456789",
+      "name": "Notify Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [1250, 300],
+      "credentials": {
+        "slackApi": {
+          "id": "3",
+          "name": "Slack API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "### Error Creating Alerts\n\nFailed to create technical alerts for {{$json.symbol}}.\n\nError: {{$json.error}}"
+      },
+      "id": "b9c0d1e2-f3a4-5678-cdef-901234567890",
+      "name": "Log Error",
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [1250, 500]
+    }
+  ],
+  "connections": {
+    "Every 4 Hours": {
+      "main": [
+        [
+          {
+            "node": "Stock Symbols",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stock Symbols": {
+      "main": [
+        [
+          {
+            "node": "Split Symbols",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Symbols": {
+      "main": [
+        [
+          {
+            "node": "Golden Cross Alert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSI Overbought Alert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSI Oversold Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Golden Cross Alert": {
+      "main": [
+        [
+          {
+            "node": "Check Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSI Overbought Alert": {
+      "main": [
+        [
+          {
+            "node": "Check Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSI Oversold Alert": {
+      "main": [
+        [
+          {
+            "node": "Check Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Success": {
+      "main": [
+        [
+          {
+            "node": "Notify Slack",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "12d3a0f1-0a2e-4f23-8f1a-1234567890cd",
+  "id": "2",
+  "meta": {
+    "instanceId": "abc123def456ghi789jkl012mno345pqr678stu901vwx234yz"
+  },
+  "tags": []
+}
