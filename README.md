@@ -1,4 +1,4 @@
-# n8n-nodes-stockalert
+# @stockalert/n8n-nodes
 
 This is an n8n community node that allows you to integrate [StockAlert.pro](https://stockalert.pro) with your n8n workflows.
 
@@ -9,13 +9,13 @@ StockAlert.pro is a real-time stock monitoring platform that sends notifications
 ### Community Nodes
 
 1. Go to **Settings > Community Nodes**
-2. Search for `n8n-nodes-stockalert`
+2. Search for `@stockalert/n8n-nodes`
 3. Click **Install**
 
 ### Manual Installation
 
 ```bash
-npm install n8n-nodes-stockalert
+npm install @stockalert/n8n-nodes
 ```
 
 ## Authentication
