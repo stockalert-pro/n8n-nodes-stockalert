@@ -19,7 +19,7 @@ export class StockAlertApi implements ICredentialType {
 			},
 			default: '',
 			required: true,
-			description: 'Your StockAlert.pro API key. Get it from https://stockalert.pro/dashboard/api-keys',
+			description: 'Your StockAlert.pro API key. Get it from https://stockalert.pro/dashboard/api-keys.',
 		},
 		{
 			displayName: 'Environment',

@@ -91,20 +91,12 @@ export class StockAlertTrigger implements INodeType {
 						default: [],
 						options: [
 							{
-								name: 'Price Above',
-								value: 'price_above',
+								name: 'MA Death Cross',
+								value: 'ma_crossover_death',
 							},
 							{
-								name: 'Price Below',
-								value: 'price_below',
-							},
-							{
-								name: 'Price Change Up',
-								value: 'price_change_up',
-							},
-							{
-								name: 'Price Change Down',
-								value: 'price_change_down',
+								name: 'MA Golden Cross',
+								value: 'ma_crossover_golden',
 							},
 							{
 								name: 'New High',
@@ -115,12 +107,20 @@ export class StockAlertTrigger implements INodeType {
 								value: 'new_low',
 							},
 							{
-								name: 'MA Golden Cross',
-								value: 'ma_crossover_golden',
+								name: 'Price Above',
+								value: 'price_above',
 							},
 							{
-								name: 'MA Death Cross',
-								value: 'ma_crossover_death',
+								name: 'Price Below',
+								value: 'price_below',
+							},
+							{
+								name: 'Price Change Down',
+								value: 'price_change_down',
+							},
+							{
+								name: 'Price Change Up',
+								value: 'price_change_up',
 							},
 							{
 								name: 'RSI Limit',
@@ -141,7 +141,6 @@ export class StockAlertTrigger implements INodeType {
 	webhookMethods = {
 		default: {
 			async checkExists(this: IHookFunctions): Promise<boolean> {
-				const webhookUrl = this.getNodeWebhookUrl('default') as string;
 				const webhookData = this.getWorkflowStaticData('node');
 
 				// Check if webhook exists
@@ -238,9 +237,9 @@ export class StockAlertTrigger implements INodeType {
 
 		// Verify webhook signature if secret exists
 		if (webhookData.webhookSecret && req.headers['x-stockalert-signature']) {
-			const crypto = require('crypto');
+			const crypto = await import('crypto');
 			const expectedSignature = crypto
-				.createHmac('sha256', webhookData.webhookSecret)
+				.createHmac('sha256', webhookData.webhookSecret as string)
 				.update(JSON.stringify(req.body))
 				.digest('hex');
 

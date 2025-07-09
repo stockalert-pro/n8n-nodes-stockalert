@@ -4,7 +4,6 @@ import {
 	INodeType,
 	INodeTypeDescription,
 	IDataObject,
-	NodeOperationError,
 	NodeConnectionType,
 } from 'n8n-workflow';
 
@@ -12,7 +11,6 @@ import {
 	stockAlertApiRequest,
 	stockAlertApiRequestAllItems,
 	alertConditions,
-	getAlertConditionFields,
 } from './GenericFunctions';
 
 export class StockAlert implements INodeType {
@@ -125,7 +123,7 @@ export class StockAlert implements INodeType {
 					{
 						name: 'Get Many',
 						value: 'getAll',
-						description: 'Get all webhooks',
+						description: 'Get many webhooks',
 						action: 'Get many webhooks',
 					},
 				],
@@ -161,11 +159,68 @@ export class StockAlert implements INodeType {
 				},
 				options: [
 					{
+						displayName: 'MA Period',
+						name: 'maPeriod',
+						type: 'options',
+						default: 50,
+						options: [
+							{
+								name: '50-Day MA',
+								value: 50,
+							},
+							{
+								name: '200-Day MA',
+								value: 200,
+							},
+						],
+						displayOptions: {
+							show: {
+								'/condition': ['ma_touch_above', 'ma_touch_below'],
+							},
+						},
+					},
+					{
+						displayName: 'Notification Channel',
+						name: 'notification',
+						type: 'options',
+						default: 'email',
+						options: [
+							{
+								name: 'Email',
+								value: 'email',
+							},
+							{
+								name: 'SMS',
+								value: 'sms',
+							},
+						],
+					},
+					{
+						displayName: 'RSI Direction',
+						name: 'rsiDirection',
+						type: 'options',
+						default: 'above',
+						options: [
+							{
+								name: 'Above',
+								value: 'above',
+							},
+							{
+								name: 'Below',
+								value: 'below',
+							},
+						],
+						displayOptions: {
+							show: {
+								'/condition': ['rsi_limit'],
+							},
+						},
+					},
+					{
 						displayName: 'Stock Symbol',
 						name: 'symbol',
 						type: 'string',
 						default: '',
-						required: true,
 						placeholder: 'AAPL',
 						description: 'Stock ticker symbol',
 					},
@@ -189,64 +244,6 @@ export class StockAlert implements INodeType {
 									'forward_pe_below',
 									'forward_pe_above',
 								],
-							},
-						},
-					},
-					{
-						displayName: 'Notification Channel',
-						name: 'notification',
-						type: 'options',
-						default: 'email',
-						options: [
-							{
-								name: 'Email',
-								value: 'email',
-							},
-							{
-								name: 'SMS',
-								value: 'sms',
-							},
-						],
-					},
-					{
-						displayName: 'MA Period',
-						name: 'maPeriod',
-						type: 'options',
-						default: 50,
-						options: [
-							{
-								name: '50-Day MA',
-								value: 50,
-							},
-							{
-								name: '200-Day MA',
-								value: 200,
-							},
-						],
-						displayOptions: {
-							show: {
-								'/condition': ['ma_touch_above', 'ma_touch_below'],
-							},
-						},
-					},
-					{
-						displayName: 'RSI Direction',
-						name: 'rsiDirection',
-						type: 'options',
-						default: 'above',
-						options: [
-							{
-								name: 'Above',
-								value: 'above',
-							},
-							{
-								name: 'Below',
-								value: 'below',
-							},
-						],
-						displayOptions: {
-							show: {
-								'/condition': ['rsi_limit'],
 							},
 						},
 					},
@@ -318,7 +315,6 @@ export class StockAlert implements INodeType {
 				},
 				typeOptions: {
 					minValue: 1,
-					maxValue: 100,
 				},
 				default: 50,
 				description: 'Max number of results to return',
@@ -336,30 +332,6 @@ export class StockAlert implements INodeType {
 					},
 				},
 				options: [
-					{
-						displayName: 'Status',
-						name: 'status',
-						type: 'options',
-						default: '',
-						options: [
-							{
-								name: 'All',
-								value: '',
-							},
-							{
-								name: 'Active',
-								value: 'active',
-							},
-							{
-								name: 'Paused',
-								value: 'paused',
-							},
-							{
-								name: 'Triggered',
-								value: 'triggered',
-							},
-						],
-					},
 					{
 						displayName: 'Alert Type',
 						name: 'condition',
@@ -379,6 +351,22 @@ export class StockAlert implements INodeType {
 						type: 'string',
 						default: '',
 						description: 'Search by symbol or company name',
+					},
+					{
+						displayName: 'Sort Direction',
+						name: 'sortDirection',
+						type: 'options',
+						default: 'desc',
+						options: [
+							{
+								name: 'Ascending',
+								value: 'asc',
+							},
+							{
+								name: 'Descending',
+								value: 'desc',
+							},
+						],
 					},
 					{
 						displayName: 'Sort Field',
@@ -401,18 +389,26 @@ export class StockAlert implements INodeType {
 						],
 					},
 					{
-						displayName: 'Sort Direction',
-						name: 'sortDirection',
+						displayName: 'Status',
+						name: 'status',
 						type: 'options',
-						default: 'desc',
+						default: '',
 						options: [
 							{
-								name: 'Ascending',
-								value: 'asc',
+								name: 'All',
+								value: '',
 							},
 							{
-								name: 'Descending',
-								value: 'desc',
+								name: 'Active',
+								value: 'active',
+							},
+							{
+								name: 'Paused',
+								value: 'paused',
+							},
+							{
+								name: 'Triggered',
+								value: 'triggered',
 							},
 						],
 					},
@@ -497,7 +493,7 @@ export class StockAlert implements INodeType {
 					},
 				},
 				default: true,
-				description: 'Whether to return all results',
+				description: 'Whether to return all results or only up to a given limit',
 			},
 		],
 	};
@@ -689,7 +685,7 @@ export class StockAlert implements INodeType {
 					else if (operation === 'delete') {
 						const webhookId = this.getNodeParameter('webhookId', i) as string;
 						
-						const response = await stockAlertApiRequest.call(
+						await stockAlertApiRequest.call(
 							this,
 							'DELETE',
 							`/webhooks/${webhookId}`,
