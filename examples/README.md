@@ -28,12 +28,12 @@ An advanced workflow that runs every 4 hours and:
 A comprehensive webhook setup that:
 - Registers webhooks with StockAlert.pro
 - Receives and validates webhook notifications
-- Routes events based on type (triggered, created, updated)
+- Processes alert.triggered events
 - Logs events to Google Sheets
 - Sends formatted notifications to Slack and Discord
-- Includes security validation
+- Includes security validation with HMAC signature verification
 
-**Use Case**: Real-time integration with StockAlert.pro events for multi-channel notifications and logging.
+**Use Case**: Real-time integration with StockAlert.pro alert triggers for multi-channel notifications and logging.
 
 ### 4. Portfolio Monitoring Workflow (`4-portfolio-monitoring-workflow.json`)
 A portfolio management workflow that:

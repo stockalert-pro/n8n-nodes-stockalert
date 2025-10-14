@@ -26,7 +26,7 @@ export async function stockAlertApiRequest(
 
 	const options: IHttpRequestOptions = {
 		method,
-		url: `${baseUrl}/api/public/v1${endpoint}`,
+		url: `${baseUrl}/api/v1${endpoint}`,
 		json: true,
 		body,
 		qs,
@@ -67,15 +67,15 @@ export async function stockAlertApiRequestAllItems(
 		qs.limit = 100; // Maximum allowed by API
 
 		responseData = await stockAlertApiRequest.call(this, method, endpoint, body, qs);
-		
+
 		if (responseData.data && Array.isArray(responseData.data)) {
 			returnData.push(...responseData.data);
 		}
 
 		page++;
 	} while (
-		responseData.pagination &&
-		responseData.pagination.page < responseData.pagination.totalPages
+		responseData.meta?.pagination &&
+		responseData.meta.pagination.page < responseData.meta.pagination.totalPages
 	);
 
 	return returnData;

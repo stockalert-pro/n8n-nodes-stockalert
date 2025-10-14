@@ -37,11 +37,7 @@ You'll need a StockAlert.pro API key:
 - **Delete Alert**: Remove alerts you no longer need
 
 ### StockAlert Trigger Node
-- **Real-time Events**: Receive webhook notifications when:
-  - Alert is triggered
-  - Alert is created
-  - Alert is updated
-  - Alert is deleted
+- **Real-time Events**: Receive webhook notifications when alerts are triggered
 - **Filtering**: Filter events by stock symbol or alert type
 
 ### Webhook Management
