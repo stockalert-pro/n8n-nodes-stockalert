@@ -50,21 +50,6 @@ export class StockAlertTrigger implements INodeType {
 						value: 'alert.triggered',
 						description: 'Fires when an alert condition is met',
 					},
-					{
-						name: 'Alert Created',
-						value: 'alert.created',
-						description: 'Fires when a new alert is created',
-					},
-					{
-						name: 'Alert Updated',
-						value: 'alert.updated',
-						description: 'Fires when an alert is updated',
-					},
-					{
-						name: 'Alert Deleted',
-						value: 'alert.deleted',
-						description: 'Fires when an alert is deleted',
-					},
 				],
 				description: 'The events to listen for',
 			},
@@ -257,9 +242,10 @@ export class StockAlertTrigger implements INodeType {
 			const allowedSymbols = (options.filterSymbol as string)
 				.split(',')
 				.map(s => s.trim().toUpperCase());
-			
-			if (payload.data && (payload.data as IDataObject).symbol) {
-				const eventSymbol = ((payload.data as IDataObject).symbol as string).toUpperCase();
+
+			if (payload.data && (payload.data as IDataObject).alert) {
+				const alert = (payload.data as IDataObject).alert as IDataObject;
+				const eventSymbol = (alert.symbol as string).toUpperCase();
 				if (!allowedSymbols.includes(eventSymbol)) {
 					// Don't trigger for this symbol
 					return {
@@ -270,8 +256,9 @@ export class StockAlertTrigger implements INodeType {
 		}
 
 		if (options.filterCondition && (options.filterCondition as string[]).length > 0) {
-			if (payload.data && (payload.data as IDataObject).condition) {
-				const eventCondition = (payload.data as IDataObject).condition as string;
+			if (payload.data && (payload.data as IDataObject).alert) {
+				const alert = (payload.data as IDataObject).alert as IDataObject;
+				const eventCondition = alert.condition as string;
 				if (!(options.filterCondition as string[]).includes(eventCondition)) {
 					// Don't trigger for this condition
 					return {

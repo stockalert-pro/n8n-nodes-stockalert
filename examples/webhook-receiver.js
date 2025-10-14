@@ -52,22 +52,11 @@ const server = http.createServer((req, res) => {
         console.log('Timestamp:', payload.timestamp);
         console.log('Data:', JSON.stringify(payload.data, null, 2));
         
-        // Handle different event types
-        switch (payload.event) {
-          case 'alert.triggered':
-            handleAlertTriggered(payload.data);
-            break;
-          case 'alert.created':
-            handleAlertCreated(payload.data);
-            break;
-          case 'alert.updated':
-            handleAlertUpdated(payload.data);
-            break;
-          case 'alert.deleted':
-            handleAlertDeleted(payload.data);
-            break;
-          default:
-            console.log('Unknown event type:', payload.event);
+        // Handle the event (currently only 'alert.triggered' is supported)
+        if (payload.event === 'alert.triggered') {
+          handleAlertTriggered(payload.data);
+        } else {
+          console.log('Unknown event type:', payload.event);
         }
         
         // Send success response
@@ -92,31 +81,23 @@ const server = http.createServer((req, res) => {
   }
 });
 
-// Event handlers
+// Event handler for alert.triggered
 function handleAlertTriggered(data) {
+  const alert = data.alert;
+  const stock = data.stock;
+
   console.log(`
 🚨 ALERT TRIGGERED!
-Symbol: ${data.symbol}
-Condition: ${data.condition}
-Threshold: ${data.threshold}
-Current Value: ${data.current_value}
-Triggered At: ${data.triggered_at}
+Symbol: ${alert.symbol}
+Condition: ${alert.condition}
+Threshold: ${alert.threshold || 'N/A'}
+Current Price: ${stock.price}
+Change: ${stock.change_percent ? stock.change_percent + '%' : 'N/A'}
+Status: ${alert.status}
   `);
-  
+
   // Add your custom logic here
   // e.g., send notification, update database, trigger automation
-}
-
-function handleAlertCreated(data) {
-  console.log(`✅ New alert created for ${data.symbol}`);
-}
-
-function handleAlertUpdated(data) {
-  console.log(`📝 Alert updated for ${data.symbol}`);
-}
-
-function handleAlertDeleted(data) {
-  console.log(`🗑️ Alert deleted: ${data.alert_id}`);
 }
 
 // Start server

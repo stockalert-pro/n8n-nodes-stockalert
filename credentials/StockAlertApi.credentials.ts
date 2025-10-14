@@ -49,7 +49,7 @@ export class StockAlertApi implements ICredentialType {
 				},
 			},
 			placeholder: 'https://your-stockalert-instance.com',
-			description: 'The base URL for your StockAlert instance (without /api/public/v1)',
+			description: 'The base URL for your StockAlert instance (without /api/v1)',
 		},
 	];
 
@@ -64,7 +64,7 @@ export class StockAlertApi implements ICredentialType {
 
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: '={{$credentials.environment === "production" ? "https://stockalert.pro" : $credentials.customUrl}}/api/public/v1',
+			baseURL: '={{$credentials.environment === "production" ? "https://stockalert.pro" : $credentials.customUrl}}/api/v1',
 			url: '/alerts?limit=1',
 		},
 	};

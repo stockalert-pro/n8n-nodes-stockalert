@@ -265,8 +265,8 @@ export class StockAlert implements INodeType {
 			},
 			// Alert Update fields
 			{
-				displayName: 'Status',
-				name: 'status',
+				displayName: 'Update Action',
+				name: 'updateAction',
 				type: 'options',
 				displayOptions: {
 					show: {
@@ -276,16 +276,17 @@ export class StockAlert implements INodeType {
 				},
 				options: [
 					{
-						name: 'Active',
-						value: 'active',
+						name: 'Activate',
+						value: 'activate',
+						description: 'Reactivate a paused alert',
 					},
 					{
-						name: 'Paused',
-						value: 'paused',
+						name: 'Pause',
+						value: 'pause',
+						description: 'Pause an active alert',
 					},
 				],
-				default: 'active',
-				description: 'New status for the alert',
+				default: 'pause',
 			},
 			// Alert Get Many fields
 			{
@@ -446,21 +447,6 @@ export class StockAlert implements INodeType {
 						value: 'alert.triggered',
 						description: 'When an alert condition is met',
 					},
-					{
-						name: 'Alert Created',
-						value: 'alert.created',
-						description: 'When a new alert is created',
-					},
-					{
-						name: 'Alert Updated',
-						value: 'alert.updated',
-						description: 'When an alert is updated',
-					},
-					{
-						name: 'Alert Deleted',
-						value: 'alert.deleted',
-						description: 'When an alert is deleted',
-					},
 				],
 				default: ['alert.triggered'],
 				description: 'Events that trigger the webhook',
@@ -615,17 +601,12 @@ export class StockAlert implements INodeType {
 					
 					else if (operation === 'update') {
 						const alertId = this.getNodeParameter('alertId', i) as string;
-						const status = this.getNodeParameter('status', i) as string;
-						
-						const body: IDataObject = {
-							status,
-						};
+						const updateAction = this.getNodeParameter('updateAction', i) as string;
 
 						const response = await stockAlertApiRequest.call(
 							this,
-							'PUT',
-							`/alerts/${alertId}`,
-							body,
+							'POST',
+							`/alerts/${alertId}/${updateAction}`,
 						);
 
 						returnData.push(response.data as IDataObject);
@@ -633,17 +614,14 @@ export class StockAlert implements INodeType {
 					
 					else if (operation === 'delete') {
 						const alertId = this.getNodeParameter('alertId', i) as string;
-						
+
 						const response = await stockAlertApiRequest.call(
 							this,
 							'DELETE',
 							`/alerts/${alertId}`,
 						);
 
-						returnData.push({
-							success: true,
-							message: response.message || 'Alert deleted successfully',
-						});
+						returnData.push(response.data as IDataObject);
 					}
 				}
 				
@@ -683,17 +661,14 @@ export class StockAlert implements INodeType {
 					
 					else if (operation === 'delete') {
 						const webhookId = this.getNodeParameter('webhookId', i) as string;
-						
-						await stockAlertApiRequest.call(
+
+						const response = await stockAlertApiRequest.call(
 							this,
 							'DELETE',
 							`/webhooks/${webhookId}`,
 						);
 
-						returnData.push({
-							success: true,
-							message: 'Webhook deleted successfully',
-						});
+						returnData.push(response.data as IDataObject);
 					}
 				}
 			} catch (error) {
