@@ -75,7 +75,8 @@ export async function stockAlertApiRequestAllItems(
 		page++;
 	} while (
 		responseData.meta?.pagination &&
-		responseData.meta.pagination.page < responseData.meta.pagination.totalPages
+		responseData.meta.pagination.page <
+			(responseData.meta.pagination.total_pages ?? responseData.meta.pagination.totalPages ?? 1)
 	);
 
 	return returnData;
@@ -191,7 +192,12 @@ export const alertConditions = [
 	{
 		name: 'Dividend Payment',
 		value: 'dividend_payment',
-		description: 'Notification before dividend payment',
+		description: 'Notification on dividend payment date',
+	},
+	{
+		name: 'Insider Transactions',
+		value: 'insider_transactions',
+		description: 'Alert on insider buys or sells above a minimum value',
 	},
 ];
 
@@ -259,17 +265,16 @@ export function getAlertConditionFields(condition: string): INodeProperties[] {
 		
 		case 'new_high':
 		case 'new_low':
-		case 'reminder':
-		case 'daily_reminder':
 		case 'ma_crossover_golden':
 		case 'ma_crossover_death':
+			return commonFields;
+
+		case 'reminder':
 		case 'earnings_announcement':
 		case 'dividend_ex_date':
+			return [...commonFields, thresholdField];
+
 		case 'dividend_payment':
-			return commonFields;
-		
-		case 'ma_touch_above':
-		case 'ma_touch_below':
 			return [
 				...commonFields,
 				{
@@ -280,24 +285,18 @@ export function getAlertConditionFields(condition: string): INodeProperties[] {
 					default: {},
 					options: [
 						{
-							displayName: 'MA Period',
-							name: 'period',
-							type: 'options',
-							default: 50,
-							options: [
-								{
-									name: '50-Day MA',
-									value: 50,
-								},
-								{
-									name: '200-Day MA',
-									value: 200,
-								},
-							],
+							displayName: 'Shares',
+							name: 'shares',
+							type: 'number',
+							default: 1,
 						},
 					],
 				},
 			];
+		
+		case 'ma_touch_above':
+		case 'ma_touch_below':
+			return [...commonFields, thresholdField];
 		
 		case 'rsi_limit':
 			return [
@@ -314,17 +313,104 @@ export function getAlertConditionFields(condition: string): INodeProperties[] {
 							displayName: 'Direction',
 							name: 'direction',
 							type: 'options',
-							default: 'above',
+							default: 'both',
 							options: [
 								{
-									name: 'Above',
-									value: 'above',
+									name: 'Up',
+									value: 'up',
 								},
 								{
-									name: 'Below',
-									value: 'below',
+									name: 'Down',
+									value: 'down',
+								},
+								{
+									name: 'Both',
+									value: 'both',
 								},
 							],
+						},
+					],
+				},
+			];
+
+		case 'daily_reminder':
+			return [
+				...commonFields,
+				{
+					displayName: 'Additional Parameters',
+					name: 'parameters',
+					type: 'collection',
+					placeholder: 'Add Parameter',
+					default: {},
+					options: [
+						{
+							displayName: 'Delivery Time',
+							name: 'deliveryTime',
+							type: 'options',
+							default: 'market_open',
+							options: [
+								{
+									name: 'Market Open',
+									value: 'market_open',
+								},
+								{
+									name: 'After Market Close',
+									value: 'after_market_close',
+								},
+							],
+						},
+					],
+				},
+			];
+
+		case 'insider_transactions':
+			return [
+				...commonFields,
+				thresholdField,
+				{
+					displayName: 'Additional Parameters',
+					name: 'parameters',
+					type: 'collection',
+					placeholder: 'Add Parameter',
+					default: {},
+					options: [
+						{
+							displayName: 'Direction',
+							name: 'direction',
+							type: 'options',
+							default: 'both',
+							options: [
+								{
+									name: 'Buy',
+									value: 'buy',
+								},
+								{
+									name: 'Sell',
+									value: 'sell',
+								},
+								{
+									name: 'Both',
+									value: 'both',
+								},
+							],
+						},
+						{
+							displayName: 'Min Executives',
+							name: 'minExecutives',
+							type: 'number',
+							default: 1,
+						},
+						{
+							displayName: 'Window Days',
+							name: 'windowDays',
+							type: 'number',
+							default: 14,
+						},
+						{
+							displayName: 'Open Market Only',
+							name: 'openMarketOnly',
+							type: 'boolean',
+							default: true,
 						},
 					],
 				},

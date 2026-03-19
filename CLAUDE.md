@@ -44,10 +44,10 @@ npm run prepublishOnly
 - `credentials/StockAlertApi.credentials.ts`: API authentication credential type
 
 ### Alert Types Architecture
-The node supports 21 alert types defined in `GenericFunctions.ts`:
+The node supports 22 public alert types defined in `GenericFunctions.ts`:
 - Price alerts (above, below, change up/down, 52-week high/low)
 - Technical alerts (golden cross, death cross, MA touch, RSI, volume)
-- Fundamental alerts (P/E ratio, forward P/E, earnings)
+- Fundamental alerts (P/E ratio, forward P/E, earnings, insider transactions)
 - Dividend alerts (ex-date, payment date)
 - Time-based alerts (one-time, daily reminders)
 
@@ -57,7 +57,7 @@ Each alert type has specific condition fields defined in the `alertConditionFiel
 - Base URL: `https://stockalert.pro/api/v1`
 - Authentication: API key via `stockAlertApi` credentials (X-API-Key header)
 - Supports custom instance URLs for development/testing
-- All responses use envelope format: `{ success, data, meta: { rateLimit, pagination } }`
+- All responses use envelope format: `{ success, data, meta }` with `meta.rate_limit` and `meta.pagination.total_pages`
 
 ### n8n-specific Considerations
 - Uses CommonJS module format for n8n compatibility
@@ -66,7 +66,7 @@ Each alert type has specific condition fields defined in the `alertConditionFiel
 - Dynamic crypto import required: `const crypto = await import('crypto')`
 
 ## Testing Approach
-- No unit tests implemented
+- Unit tests cover helper logic and alert field generation via Vitest
 - Manual testing via example workflows in `/examples/`
 - Test credentials endpoint available in API configuration
 - ESLint ensures code quality

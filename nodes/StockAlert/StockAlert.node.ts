@@ -158,23 +158,59 @@ export class StockAlert implements INodeType {
 				},
 				options: [
 					{
-						displayName: 'MA Period',
-						name: 'maPeriod',
+						displayName: 'Delivery Time',
+						name: 'deliveryTime',
 						type: 'options',
-						default: 50,
+						default: 'market_open',
 						options: [
 							{
-								name: '50-Day MA',
-								value: 50,
+								name: 'Market Open',
+								value: 'market_open',
 							},
 							{
-								name: '200-Day MA',
-								value: 200,
+								name: 'After Market Close',
+								value: 'after_market_close',
 							},
 						],
 						displayOptions: {
 							show: {
-								'/condition': ['ma_touch_above', 'ma_touch_below'],
+								'/condition': ['daily_reminder'],
+							},
+						},
+					},
+					{
+						displayName: 'Insider Direction',
+						name: 'insiderDirection',
+						type: 'options',
+						default: 'both',
+						options: [
+							{
+								name: 'Buy',
+								value: 'buy',
+							},
+							{
+								name: 'Sell',
+								value: 'sell',
+							},
+							{
+								name: 'Both',
+								value: 'both',
+							},
+						],
+						displayOptions: {
+							show: {
+								'/condition': ['insider_transactions'],
+							},
+						},
+					},
+					{
+						displayName: 'Min Executives',
+						name: 'minExecutives',
+						type: 'number',
+						default: 1,
+						displayOptions: {
+							show: {
+								'/condition': ['insider_transactions'],
 							},
 						},
 					},
@@ -195,23 +231,49 @@ export class StockAlert implements INodeType {
 						],
 					},
 					{
+						displayName: 'Open Market Only',
+						name: 'openMarketOnly',
+						type: 'boolean',
+						default: true,
+						displayOptions: {
+							show: {
+								'/condition': ['insider_transactions'],
+							},
+						},
+					},
+					{
 						displayName: 'RSI Direction',
 						name: 'rsiDirection',
 						type: 'options',
-						default: 'above',
+						default: 'both',
 						options: [
 							{
-								name: 'Above',
-								value: 'above',
+								name: 'Up',
+								value: 'up',
 							},
 							{
-								name: 'Below',
-								value: 'below',
+								name: 'Down',
+								value: 'down',
+							},
+							{
+								name: 'Both',
+								value: 'both',
 							},
 						],
 						displayOptions: {
 							show: {
 								'/condition': ['rsi_limit'],
+							},
+						},
+					},
+					{
+						displayName: 'Shares',
+						name: 'shares',
+						type: 'number',
+						default: 1,
+						displayOptions: {
+							show: {
+								'/condition': ['dividend_payment'],
 							},
 						},
 					},
@@ -236,13 +298,30 @@ export class StockAlert implements INodeType {
 									'price_below',
 									'price_change_up',
 									'price_change_down',
+									'reminder',
+									'ma_touch_above',
+									'ma_touch_below',
 									'volume_change',
 									'rsi_limit',
 									'pe_ratio_below',
 									'pe_ratio_above',
 									'forward_pe_below',
 									'forward_pe_above',
+									'earnings_announcement',
+									'dividend_ex_date',
+									'insider_transactions',
 								],
+							},
+						},
+					},
+					{
+						displayName: 'Window Days',
+						name: 'windowDays',
+						type: 'number',
+						default: 14,
+						displayOptions: {
+							show: {
+								'/condition': ['insider_transactions'],
 							},
 						},
 					},
@@ -395,12 +474,16 @@ export class StockAlert implements INodeType {
 						default: '',
 						options: [
 							{
+								name: 'Active',
+								value: 'active',
+							},
+							{
 								name: 'All',
 								value: '',
 							},
 							{
-								name: 'Active',
-								value: 'active',
+								name: 'Inactive',
+								value: 'inactive',
 							},
 							{
 								name: 'Paused',
@@ -509,13 +592,30 @@ export class StockAlert implements INodeType {
 
 						// Add parameters for specific alert types
 						const parameters: IDataObject = {};
-						if (condition === 'ma_touch_above' || condition === 'ma_touch_below') {
-							if (config.maPeriod) {
-								parameters.period = config.maPeriod;
-							}
-						} else if (condition === 'rsi_limit') {
+						if (condition === 'rsi_limit') {
 							if (config.rsiDirection) {
 								parameters.direction = config.rsiDirection;
+							}
+						} else if (condition === 'daily_reminder') {
+							if (config.deliveryTime) {
+								parameters.deliveryTime = config.deliveryTime;
+							}
+						} else if (condition === 'dividend_payment') {
+							if (config.shares !== undefined) {
+								parameters.shares = config.shares;
+							}
+						} else if (condition === 'insider_transactions') {
+							if (config.insiderDirection) {
+								parameters.direction = config.insiderDirection;
+							}
+							if (config.minExecutives !== undefined) {
+								parameters.minExecutives = config.minExecutives;
+							}
+							if (config.windowDays !== undefined) {
+								parameters.windowDays = config.windowDays;
+							}
+							if (config.openMarketOnly !== undefined) {
+								parameters.openMarketOnly = config.openMarketOnly;
 							}
 						}
 
@@ -566,10 +666,10 @@ export class StockAlert implements INodeType {
 							qs.search = filters.search;
 						}
 						if (filters.sortField) {
-							qs.sortField = filters.sortField;
+							qs.sort_field = filters.sortField;
 						}
 						if (filters.sortDirection) {
-							qs.sortDirection = filters.sortDirection;
+							qs.sort_direction = filters.sortDirection;
 						}
 
 						let responseData;
