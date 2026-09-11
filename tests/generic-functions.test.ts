@@ -39,12 +39,19 @@ describe('GenericFunctions', () => {
     );
   });
 
+  it('exposes social_buzz in alert conditions', () => {
+    expect(alertConditions.some((condition) => condition.value === 'social_buzz')).toBe(true);
+  });
+
   it('returns current parameter fields for daily reminders and insider alerts', () => {
     const dailyReminderFields = getAlertConditionFields('daily_reminder');
     const insiderFields = getAlertConditionFields('insider_transactions');
+    const socialBuzzFields = getAlertConditionFields('social_buzz');
 
     expect(dailyReminderFields.some((field) => field.name === 'parameters')).toBe(true);
     expect(insiderFields.some((field) => field.name === 'threshold')).toBe(true);
     expect(insiderFields.some((field) => field.name === 'parameters')).toBe(true);
+    expect(socialBuzzFields.some((field) => field.name === 'threshold')).toBe(false);
+    expect(socialBuzzFields.some((field) => field.name === 'parameters')).toBe(true);
   });
 });
