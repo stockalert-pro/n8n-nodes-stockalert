@@ -606,7 +606,7 @@ export class StockAlert implements INodeType {
 							notification: config.notification || 'email',
 						};
 
-						// Add threshold if needed
+						// Hidden collection fields still send default 0; social_buzz rejects any threshold.
 						if (condition !== 'social_buzz' && config.threshold !== undefined) {
 							body.threshold = config.threshold as number;
 						}

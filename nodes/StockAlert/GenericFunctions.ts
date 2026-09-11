@@ -420,37 +420,6 @@ export function getAlertConditionFields(condition: string): INodeProperties[] {
 					],
 				},
 			];
-
-		case 'social_buzz':
-			return [
-				...commonFields,
-				{
-					displayName: 'Additional Parameters',
-					name: 'parameters',
-					type: 'collection',
-					placeholder: 'Add Parameter',
-					default: {},
-					options: [
-						{
-							displayName: 'Direction',
-							name: 'direction',
-							type: 'options',
-							default: 'rising',
-							required: true,
-							options: [
-								{
-									name: 'Rising',
-									value: 'rising',
-								},
-								{
-									name: 'Falling',
-									value: 'falling',
-								},
-							],
-						},
-					],
-				},
-			];
 		
 		case 'pe_ratio_below':
 		case 'pe_ratio_above':

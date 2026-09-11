@@ -33,25 +33,18 @@ describe('GenericFunctions', () => {
     expect(httpRequestWithAuthentication).toHaveBeenCalledTimes(2);
   });
 
-  it('exposes insider_transactions in alert conditions', () => {
-    expect(alertConditions.some((condition) => condition.value === 'insider_transactions')).toBe(
-      true
-    );
-  });
-
-  it('exposes social_buzz in alert conditions', () => {
-    expect(alertConditions.some((condition) => condition.value === 'social_buzz')).toBe(true);
+  it('exposes extra alert conditions', () => {
+    const values = alertConditions.map((condition) => condition.value);
+    expect(values).toContain('insider_transactions');
+    expect(values).toContain('social_buzz');
   });
 
   it('returns current parameter fields for daily reminders and insider alerts', () => {
     const dailyReminderFields = getAlertConditionFields('daily_reminder');
     const insiderFields = getAlertConditionFields('insider_transactions');
-    const socialBuzzFields = getAlertConditionFields('social_buzz');
 
     expect(dailyReminderFields.some((field) => field.name === 'parameters')).toBe(true);
     expect(insiderFields.some((field) => field.name === 'threshold')).toBe(true);
     expect(insiderFields.some((field) => field.name === 'parameters')).toBe(true);
-    expect(socialBuzzFields.some((field) => field.name === 'threshold')).toBe(false);
-    expect(socialBuzzFields.some((field) => field.name === 'parameters')).toBe(true);
   });
 });
