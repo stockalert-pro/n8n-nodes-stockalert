@@ -278,6 +278,27 @@ export class StockAlert implements INodeType {
 						},
 					},
 					{
+						displayName: 'Social Direction',
+						name: 'socialBuzzDirection',
+						type: 'options',
+						default: 'rising',
+						options: [
+							{
+								name: 'Rising',
+								value: 'rising',
+							},
+							{
+								name: 'Falling',
+								value: 'falling',
+							},
+						],
+						displayOptions: {
+							show: {
+								'/condition': ['social_buzz'],
+							},
+						},
+					},
+					{
 						displayName: 'Stock Symbol',
 						name: 'symbol',
 						type: 'string',
@@ -585,8 +606,8 @@ export class StockAlert implements INodeType {
 							notification: config.notification || 'email',
 						};
 
-						// Add threshold if needed
-						if (config.threshold !== undefined) {
+						// Hidden collection fields still send default 0; social_buzz rejects any threshold.
+						if (condition !== 'social_buzz' && config.threshold !== undefined) {
 							body.threshold = config.threshold as number;
 						}
 
@@ -617,6 +638,8 @@ export class StockAlert implements INodeType {
 							if (config.openMarketOnly !== undefined) {
 								parameters.openMarketOnly = config.openMarketOnly;
 							}
+						} else if (condition === 'social_buzz') {
+							parameters.direction = config.socialBuzzDirection || 'rising';
 						}
 
 						if (Object.keys(parameters).length > 0) {

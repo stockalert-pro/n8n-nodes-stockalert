@@ -54,7 +54,7 @@ The node supports 22 public alert types defined in `GenericFunctions.ts`:
 Each alert type has specific condition fields defined in the `alertConditionFields` constant.
 
 ### API Integration
-- Base URL: `https://stockalert.pro/api/v1`
+- Base URL: `https://api.stockalert.pro/v1`
 - Authentication: API key via `stockAlertApi` credentials (X-API-Key header)
 - Supports custom instance URLs for development/testing
 - All responses use envelope format: `{ success, data, meta }` with `meta.rate_limit` and `meta.pagination.total_pages`

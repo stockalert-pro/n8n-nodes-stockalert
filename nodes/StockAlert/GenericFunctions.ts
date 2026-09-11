@@ -21,12 +21,12 @@ export async function stockAlertApiRequest(
 	
 	const environment = credentials.environment as string;
 	const baseUrl = environment === 'production' 
-		? 'https://stockalert.pro' 
+		? 'https://api.stockalert.pro' 
 		: credentials.customUrl as string;
 
 	const options: IHttpRequestOptions = {
 		method,
-		url: `${baseUrl}/api/v1${endpoint}`,
+		url: `${baseUrl}/v1${endpoint}`,
 		json: true,
 		body,
 		qs,
@@ -198,6 +198,11 @@ export const alertConditions = [
 		name: 'Insider Transactions',
 		value: 'insider_transactions',
 		description: 'Alert on insider buys or sells above a minimum value',
+	},
+	{
+		name: 'Social Buzz',
+		value: 'social_buzz',
+		description: 'Alert when social volume is rising or falling',
 	},
 ];
 

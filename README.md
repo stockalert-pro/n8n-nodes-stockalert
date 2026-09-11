@@ -63,6 +63,10 @@ You'll need a StockAlert.pro API key:
 - P/E Ratio Above/Below
 - Forward P/E Above/Below
 - Earnings Announcement
+- Insider Transactions
+
+### Social Alerts
+- Social Buzz (rising or falling)
 
 ### Dividend Alerts
 - Dividend Ex-Date

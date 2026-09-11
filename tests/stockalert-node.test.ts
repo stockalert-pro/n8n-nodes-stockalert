@@ -44,7 +44,7 @@ describe('StockAlert node execute', () => {
       'stockAlertApi',
       expect.objectContaining({
         method: 'POST',
-        url: 'https://stockalert.pro/api/v1/alerts',
+        url: 'https://api.stockalert.pro/v1/alerts',
         body: {
           symbol: 'NVDA',
           condition: 'insider_transactions',
@@ -91,6 +91,38 @@ describe('StockAlert node execute', () => {
     );
   });
 
+  it('serializes current create parameters for social buzz alerts', async () => {
+    const node = new StockAlert();
+    const { context, httpRequestWithAuthentication } = createExecuteContext({
+      resource: 'alert',
+      operation: 'create',
+      condition: 'social_buzz',
+      alertConfig: {
+        symbol: 'TSLA',
+        notification: 'email',
+        socialBuzzDirection: 'falling',
+      },
+    });
+
+    await node.execute.call(context as any);
+
+    expect(httpRequestWithAuthentication).toHaveBeenCalledWith(
+      'stockAlertApi',
+      expect.objectContaining({
+        method: 'POST',
+        url: 'https://api.stockalert.pro/v1/alerts',
+        body: {
+          symbol: 'TSLA',
+          condition: 'social_buzz',
+          notification: 'email',
+          parameters: {
+            direction: 'falling',
+          },
+        },
+      }),
+    );
+  });
+
   it('maps current query parameter names for alert list filters', async () => {
     const node = new StockAlert();
     const { context, httpRequestWithAuthentication } = createExecuteContext({
@@ -113,7 +145,7 @@ describe('StockAlert node execute', () => {
       'stockAlertApi',
       expect.objectContaining({
         method: 'GET',
-        url: 'https://stockalert.pro/api/v1/alerts',
+        url: 'https://api.stockalert.pro/v1/alerts',
         qs: {
           limit: 25,
           status: 'active',

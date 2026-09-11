@@ -33,10 +33,10 @@ describe('GenericFunctions', () => {
     expect(httpRequestWithAuthentication).toHaveBeenCalledTimes(2);
   });
 
-  it('exposes insider_transactions in alert conditions', () => {
-    expect(alertConditions.some((condition) => condition.value === 'insider_transactions')).toBe(
-      true
-    );
+  it('exposes extra alert conditions', () => {
+    const values = alertConditions.map((condition) => condition.value);
+    expect(values).toContain('insider_transactions');
+    expect(values).toContain('social_buzz');
   });
 
   it('returns current parameter fields for daily reminders and insider alerts', () => {
