@@ -215,27 +215,6 @@ export class StockAlert implements INodeType {
 						},
 					},
 					{
-						displayName: 'Social Direction',
-						name: 'socialBuzzDirection',
-						type: 'options',
-						default: 'rising',
-						options: [
-							{
-								name: 'Rising',
-								value: 'rising',
-							},
-							{
-								name: 'Falling',
-								value: 'falling',
-							},
-						],
-						displayOptions: {
-							show: {
-								'/condition': ['social_buzz'],
-							},
-						},
-					},
-					{
 						displayName: 'Notification Channel',
 						name: 'notification',
 						type: 'options',
@@ -295,6 +274,27 @@ export class StockAlert implements INodeType {
 						displayOptions: {
 							show: {
 								'/condition': ['dividend_payment'],
+							},
+						},
+					},
+					{
+						displayName: 'Social Direction',
+						name: 'socialBuzzDirection',
+						type: 'options',
+						default: 'rising',
+						options: [
+							{
+								name: 'Rising',
+								value: 'rising',
+							},
+							{
+								name: 'Falling',
+								value: 'falling',
+							},
+						],
+						displayOptions: {
+							show: {
+								'/condition': ['social_buzz'],
 							},
 						},
 					},
